@@ -686,15 +686,24 @@ const selected   = new Map(); // key="row-num" -> { row, num, price, dbId }
 const takenSeats = new Set(); // key="row-num"
 
 // DB-dən yerlər yüklə
+window._seatDbIds = {};
 async function fetchSeats() {
-  const seats = await sbGet('seats', 'event_id=eq.1&select=*');
-  seats.forEach(s => {
-    const key = s.row_number + '-' + s.seat_number;
-    if (s.status === 'sold') takenSeats.add(key);
-    // dbId-ni saxla — sonra sifariş zamanı lazım olacaq
-    window._seatDbIds = window._seatDbIds || {};
-    window._seatDbIds[key] = s.id;
-  });
+  try {
+    const data = await sbGet('seats', 'event_id=eq.1&select=id,row_number,seat_number,section,status');
+    if (!Array.isArray(data)) {
+      console.error('fetchSeats error:', data);
+      return;
+    }
+    takenSeats.clear();
+    data.forEach(s => {
+      const key = s.row_number + '-' + s.seat_number;
+      if (s.status === 'sold') takenSeats.add(key);
+      window._seatDbIds[key] = s.id;
+    });
+    console.log('Seats loaded:', data.length, '| Taken:', takenSeats.size);
+  } catch(e) {
+    console.error('fetchSeats exception:', e);
+  }
 }
 
 function priceClass(p) {
@@ -828,7 +837,7 @@ function appendRow(parent, rowNum, seats, align) {
     btn.dataset.row   = rowNum;
     btn.dataset.num   = s.num;
     btn.dataset.price = s.price;
-    btn.dataset.dbid  = (window._seatDbIds && window._seatDbIds[id]) || '';
+    btn.dataset.dbid  = window._seatDbIds[id] || '';
     btn.id = 'seat-' + id;
     if (takenSeats.has(id)) {
       btn.classList.add('taken');
@@ -1000,8 +1009,8 @@ async function submitPayment() {
   selected.forEach((s, id) => {
     bookedSeats.push(s);
     takenSeats.add(id);
-    const btn = document.getElementById('seat-' + id);
-    if (btn && btn.dataset.dbid) seatDbIds.push(parseInt(btn.dataset.dbid));
+    const dbid = window._seatDbIds[id];
+    if (dbid) seatDbIds.push(parseInt(dbid));
   });
   const bookedCount = bookedSeats.length;
   const bookedTotal = calcTotal();
@@ -1099,10 +1108,11 @@ async function submitPayment() {
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────
-fetchSeats().then(() => {
+(async () => {
+  await fetchSeats();
   buildHall();
   updateSummary();
-});
+})();
 </script>
 </body>
 </html>
