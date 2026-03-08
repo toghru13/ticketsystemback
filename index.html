@@ -671,12 +671,13 @@ async function sbPost(table, body, prefer='return=representation') {
     headers: { ...HEADERS, 'Prefer': prefer },
     body: JSON.stringify(body)
   });
-  return res.json();
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
 }
 async function sbPatch(table, query, body) {
   await fetch(`${SUPA_URL}/rest/v1/${table}?${query}`, {
     method: 'PATCH',
-    headers: HEADERS,
+    headers: { ...HEADERS, 'Prefer': 'return=minimal' },
     body: JSON.stringify(body)
   });
 }
