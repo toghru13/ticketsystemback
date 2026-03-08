@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test – Oturacaq Sxemi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --c10: #4CAF50;
+    --c15: #FF6B2B;
+    --c20: #2196F3;
+    --c30: #FFC107;
+    --c40: #222222;
+    --bg: #0e0e12;
+    --surface: #16161e;
+    --border: #2a2a38;
+    --text: #e8e8f0;
+    --muted: #888899;
+    --seat-h: 26px;
+    --seat-w: 26px;
+    --gap: 3px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 100px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 4vw, 36px);
+    letter-spacing: 0.06em;
+    color: #fff;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 22px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 5px 12px 5px 8px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .legend-dot { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Summary bar */
+  .summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .summary-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 12px;
+    text-align: center;
+    min-width: 90px;
+  }
+  .summary-chip .val { font-size: 20px; font-weight: 700; color: #fff; display: block; }
+
+  /* ── Hall layout ── */
+  .hall-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 1150px;
+    justify-content: center;
+  }
+
+  /* Row label column */
+  .row-labels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    margin-right: 6px;
+    flex-shrink: 0;
+    padding-top: 0;
+  }
+  .row-label-hdr {
+    height: var(--seat-h);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 9px;
+    color: #ccc;
+    font-weight: 700;
+    letter-spacing: .07em;
+    padding-right: 4px;
+    width: 36px;
+    flex-shrink: 0;
+  }
+  .row-label {
+    height: var(--seat-h);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    padding-right: 4px;
+    width: 36px;
+    flex-shrink: 0;
+  }
+
+  /* Sections */
+  .sections {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+    flex-shrink: 0;
+  }
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    flex-shrink: 0;
+  }
+  .seat-row {
+    display: flex;
+    gap: var(--gap);
+    align-items: center;
+    /* width is 100% of the fixed section width set inline */
+  }
+  .aisle-col { width: 20px; flex-shrink: 0; }
+  .section-hdr {
+    height: var(--seat-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    letter-spacing: .1em;
+    color: #555;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .aisle-hdr { width: 20px; height: var(--seat-h); }
+
+  /* Seats */
+  .seat {
+    width: var(--seat-w);
+    height: var(--seat-h);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: transform 0.12s, filter 0.12s, box-shadow 0.12s;
+    flex-shrink: 0;
+    position: relative;
+    color: rgba(255,255,255,0.9);
+    user-select: none;
+  }
+  .seat:hover {
+    transform: scale(1.28);
+    z-index: 10;
+    filter: brightness(1.3);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+  }
+  .seat.selected {
+    outline: 2.5px solid #fff;
+    outline-offset: 1.5px;
+    filter: brightness(1.25);
+    transform: scale(1.12);
+    z-index: 5;
+  }
+  .seat.taken {
+    background: #252530 !important;
+    color: #383848 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+    border: 1px solid #2e2e40 !important;
+  }
+
+  .seat-10 { background: var(--c10); }
+  .seat-15 { background: var(--c15); }
+  .seat-20 { background: var(--c20); }
+  .seat-30 { background: var(--c30); color: rgba(0,0,0,0.8); }
+  .seat-40 { background: var(--c40); border: 1px solid #555; }
+
+  /* Stage */
+  .stage-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 6px;
+    width: 100%;
+    max-width: 1150px;
+  }
+  .stage-inner {
+    display: flex;
+    flex-shrink: 0;
+  }
+  .stage-label-spacer {
+    flex-shrink: 0;
+  }
+  .stage-curve {
+    height: 54px;
+    background: linear-gradient(160deg, #b8d4ef 0%, #d8eaf8 60%, #c5ddf0 100%);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    letter-spacing: 0.2em;
+    color: #1a3a5c;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: #fff;
+    color: #111;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 7px;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .tooltip.show { opacity: 1; }
+
+  /* Confirm bar */
+  .confirm-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #111;
+    border-radius: 50px;
+    padding: 11px 10px 11px 24px;
+    font-weight: 700;
+    font-size: 14px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .confirm-bar.visible { display: flex; }
+  .confirm-bar .btn-confirm {
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .confirm-bar .btn-confirm:hover { background: #333; }
+  .confirm-bar .btn-clear {
+    background: #eee;
+    border: none;
+    border-radius: 30px;
+    padding: 9px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #555;
+  }
+  .confirm-bar .btn-clear:hover { background: #ddd; }
+
+  /* ── MODAL ── */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: #fff;
+    color: #111;
+    border-radius: 18px;
+    padding: 30px 28px 26px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: popIn 0.2s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  @keyframes popIn {
+    from { opacity:0; transform: scale(0.93) translateY(12px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+  .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #111;
+  }
+  .modal-sub { font-size: 12px; color: #888; margin-bottom: 18px; }
+
+  /* Seats summary in modal */
+  .modal-seats-box {
+    background: #f5f5f8;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+  }
+  .modal-seats-box .seat-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    color: #333;
+    border-bottom: 1px solid #e8e8ec;
+  }
+  .modal-seats-box .seat-line:last-child { border-bottom: none; }
+  .modal-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #111;
+    color: #111;
+  }
+
+  /* Form */
+  .modal label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 5px;
+    margin-top: 14px;
+    letter-spacing: .04em;
+  }
+  .modal input[type=text], .modal input[type=tel] {
+    width: 100%;
+    border: 1.5px solid #ddd;
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    color: #111;
+    background: #fff;
+  }
+  .modal input:focus { border-color: #111; }
+  .modal input.error { border-color: #e53e3e; }
+
+  /* Payment toggle */
+  .pay-toggle {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .pay-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: #555;
+  }
+  .pay-btn.active {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+  }
+
+  /* Card number field */
+  .card-field {
+    display: none;
+    margin-top: 14px;
+  }
+  .card-field.show { display: block; }
+
+  /* Receipt notice */
+  .receipt-notice {
+    background: #fffbec;
+    border: 1px solid #f0d060;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 12px;
+    color: #7a5f00;
+    margin-top: 14px;
+    line-height: 1.55;
+    display: none;
+  }
+  .receipt-notice.show { display: block; }
+  .receipt-notice strong { color: #5a4300; }
+
+  /* Modal buttons */
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .modal-actions .btn-pay {
+    flex: 1;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .modal-actions .btn-pay:hover { background: #333; }
+  .modal-actions .btn-cancel {
+    background: #f0f0f4;
+    color: #555;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-actions .btn-cancel:hover { background: #e4e4ea; }
+
+  /* ── Receipt / ticket styles ── */
+  .receipt-header { text-align:center; padding-bottom:18px; border-bottom:1.5px dashed #ddd; margin-bottom:16px; }
+  .receipt-check { font-size:44px; margin-bottom:6px; }
+  .receipt-title { font-family:'Playfair Display',serif; font-size:21px; font-weight:700; color:#111; margin-bottom:4px; }
+  .receipt-order { font-size:12px; color:#888; }
+  .receipt-meta { background:#f7f7fa; border-radius:10px; padding:12px 14px; margin-bottom:16px; }
+  .meta-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:5px 0; border-bottom:1px solid #eee; color:#444; }
+  .meta-row:last-child { border-bottom:none; }
+  .meta-row strong { color:#111; }
+  .tickets-label { font-size:13px; font-weight:700; color:#555; margin-bottom:10px; letter-spacing:.04em; }
+  .tickets-list { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .ticket-card { display:flex; align-items:stretch; background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%); border-radius:12px; overflow:hidden; color:#fff; box-shadow:0 4px 16px rgba(0,0,0,0.18); min-height:90px; }
+  .ticket-left { flex:1; padding:14px 16px; display:flex; flex-direction:column; gap:4px; }
+  .ticket-num { font-size:10px; color:#aaa; letter-spacing:.1em; font-weight:700; }
+  .ticket-event { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:#fff; }
+  .ticket-date { font-size:11px; color:#aab; margin-top:auto; }
+  .ticket-divider { width:1px; background:repeating-linear-gradient(to bottom,transparent,transparent 4px,rgba(255,255,255,0.15) 4px,rgba(255,255,255,0.15) 8px); margin:10px 0; flex-shrink:0; position:relative; }
+  .ticket-divider::before,.ticket-divider::after { content:''; position:absolute; left:50%; transform:translateX(-50%); width:16px; height:16px; background:#fff; border-radius:50%; }
+  .ticket-divider::before { top:-8px; }
+  .ticket-divider::after  { bottom:-8px; }
+  .ticket-right { width:90px; flex-shrink:0; padding:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:rgba(255,255,255,0.06); }
+  .ticket-seat-label { font-size:9px; color:#aaa; letter-spacing:.12em; font-weight:700; }
+  .ticket-seat-val   { font-size:24px; font-weight:800; color:#fff; line-height:1.1; }
+  .ticket-price      { margin-top:8px; font-size:13px; font-weight:700; color:#FFC107; }
+  .receipt-total-row { display:flex; justify-content:space-between; align-items:center; font-size:16px; font-weight:700; padding:14px 0 4px; border-top:2px solid #111; color:#111; }
+  .receipt-total-val { font-size:22px; }
+  .btn-close-success { display:block; width:100%; background:#111; color:#fff; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; }
+  .btn-close-success:hover { background:#333; }
+
+  /* Success modal */
+  .success-box {
+    text-align: center;
+    padding: 10px 0 4px;
+  }
+  .success-icon { font-size: 52px; margin-bottom: 10px; }
+  .success-box h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 8px; }
+  .success-box p { font-size: 13px; color: #666; line-height: 1.6; }
+  .success-box .btn-close-success {
+    margin-top: 22px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 36px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  @media (max-width: 680px) {
+    :root { --seat-w: 20px; --seat-h: 20px; --gap: 2px; }
+    .seat { font-size: 7px; border-radius: 3px; }
+    .aisle-col { width: 12px; }
+  }
+
+  /* Payment card info box */
+  .pay-card-info {
+    margin-top: 12px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 12px;
+    padding: 16px 18px;
+    color: #fff;
+  }
+  .pay-card-top {
+    font-size: 11px;
+    color: #aab;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .pay-card-number {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: .18em;
+    color: #fff;
+    margin-bottom: 6px;
+    font-family: 'Courier New', monospace;
+  }
+  .pay-card-owner {
+    font-size: 12px;
+    color: #FFC107;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<h1>Test</h1>
+<p class="subtitle">Oturacaq Sxemi · Bilet Seçimi</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--c10)"></span>10 AZN</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--c15)"></span>15 AZN</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--c20)"></span>20 AZN</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--c30)"></span>30 AZN</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#333;border:1px solid #555"></span>40 AZN</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#252530;border:1px solid #3a3a50"></span>Tutulub</div>
+</div>
+
+<div class="summary">
+  <div class="summary-chip"><span class="val" id="sel-count">0</span>Seçilmiş</div>
+  <div class="summary-chip"><span class="val" id="sel-total">0 ₼</span>Məbləğ</div>
+</div>
+
+<div class="hall-wrap" id="hall-wrap"></div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<!-- Confirm bottom bar -->
+<div class="confirm-bar" id="confirm-bar">
+  🎭 <span id="bar-text">0 bilet · 0 ₼</span>
+  <button class="btn-clear" id="btn-clear">Ləğv et</button>
+  <button class="btn-confirm" id="btn-confirm">Təsdiq et →</button>
+</div>
+
+<!-- ── MODAL ── -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-content">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<script>
+// ─── Layout data — exact match to image ──────────────────────────────────
+// Each row: seats are individual seat numbers with their price zone
+// Sections are LEFT / CENTER / RIGHT — each section has FIXED MAX WIDTH
+// so shorter rows (top) appear centered via justify-content
+
+// price: green=10, orange=15, blue=20, yellow=30, black=40
+// Row data: [leftSeats[], centerSeats[], rightSeats[], price]
+// Seat numbers are exactly as shown in the image per section
+
+function makeRange(from, to) {
+  const a = []; for (let i = from; i <= to; i++) a.push(i); return a;
+}
+
+// Max seats per section (for fixed-width containers)
+const MAX_LEFT   = 6;   // cols 1-6
+const MAX_CENTER = 16;  // cols 4-19 (max 16 seats)
+const MAX_RIGHT  = 8;   // cols 16-23 (max 8 seats)
+
+// Exact layout from image (row 22=top, row 1=bottom)
+// l=left seats, c=center seats, r=right seats, p=price
+const ROW_LAYOUT = {
+  22: { l:[1,2,3],           c:[4,5,6,7,8,9,10,11,12,13,14,15],                          r:[16,17,18],              p:10 },
+  21: { l:[1,2,3,4],         c:[5,6,7,8,9,10,11,12,13,14,15,16,17],                      r:[18,19,20,21],           p:10 },
+  20: { l:[1,2,3,4,5],       c:[6,7,8,9,10,11,12,13,14,15,16,17],                        r:[18,19,20,21,22],        p:10 },
+  19: { l:[1,2,3,4,5],       c:[6,7,8,9,10,11,12,13,14,15,16,17,18],                     r:[18,19,20,21,22],        p:10 },
+  18: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:10 },
+  17: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:10 },
+  16: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:15 },
+  15: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:15 },
+  14: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:15 },
+  13: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:15 },
+  12: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:15 },
+  11: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:20 },
+  10: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:20 },
+   9: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:20 },
+   8: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:20 },
+   7: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:20 },
+   6: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:30 },
+   5: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:30 },
+   4: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:30 },
+   3: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:40 },
+   2: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18],                       r:[18,19,20,21,22,23],     p:40 },
+   1: { l:[1,2,3,4,5,6],     c:[7,8,9,10,11,12,13,14,15,16,17,18,19],                    r:[18,19,20,21,22,23],     p:40 },
+};
+
+const rows = [];
+for (let r = 1; r <= 22; r++) {
+  const rd = ROW_LAYOUT[r];
+  const toSeats = (nums) => nums.map(n => ({ num: n, price: rd.p }));
+  rows.push({ row: r, left: toSeats(rd.l), center: toSeats(rd.c), right: toSeats(rd.r) });
+}
+
+// ─── Supabase konfiqurasiya ───────────────────────────────────────────────
+const SUPA_URL = 'https://amnzywniijaqheewgjso.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFtbnp5d25paWphcWhlZXdnanNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5OTU1MDYsImV4cCI6MjA4ODU3MTUwNn0.ropfp5aVwvVVwCGN22CwKElbLcR-_LW3v57oZt8ANBY';
+
+const HEADERS = {
+  'apikey': SUPA_KEY,
+  'Authorization': 'Bearer ' + SUPA_KEY,
+  'Content-Type': 'application/json'
+};
+
+async function sbGet(table, query) {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}?${query}`, { headers: HEADERS });
+  return res.json();
+}
+async function sbPost(table, body, prefer='return=representation') {
+  const res = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { ...HEADERS, 'Prefer': prefer },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+async function sbPatch(table, query, body) {
+  await fetch(`${SUPA_URL}/rest/v1/${table}?${query}`, {
+    method: 'PATCH',
+    headers: HEADERS,
+    body: JSON.stringify(body)
+  });
+}
+
+// ─── State ────────────────────────────────────────────────────────────────
+const selected   = new Map(); // key="row-num" -> { row, num, price, dbId }
+const takenSeats = new Set(); // key="row-num"
+
+// DB-dən yerlər yüklə
+async function fetchSeats() {
+  const seats = await sbGet('seats', 'event_id=eq.1&select=*');
+  seats.forEach(s => {
+    const key = s.row_number + '-' + s.seat_number;
+    if (s.status === 'sold') takenSeats.add(key);
+    // dbId-ni saxla — sonra sifariş zamanı lazım olacaq
+    window._seatDbIds = window._seatDbIds || {};
+    window._seatDbIds[key] = s.id;
+  });
+}
+
+function priceClass(p) {
+  return {10:'seat-10',15:'seat-15',20:'seat-20',30:'seat-30',40:'seat-40'}[p];
+}
+
+// ─── Build hall ───────────────────────────────────────────────────────────
+// Key visual rule: each section has a FIXED pixel width so that
+// rows with fewer seats appear right-aligned (left section),
+// centered (center section), or left-aligned (right section)
+// — exactly matching the image's pyramid shape.
+
+const SW = 26, GAP = 3; // seat width, gap
+
+function sectionWidth(maxSeats) {
+  return maxSeats * SW + (maxSeats - 1) * GAP;
+}
+
+function buildHall() {
+  const wrap = document.getElementById('hall-wrap');
+  wrap.innerHTML = '';
+
+  // Row label column
+  const labelsDiv = document.createElement('div');
+  labelsDiv.className = 'row-labels';
+  const hdr = document.createElement('div');
+  hdr.className = 'row-label-hdr';
+  hdr.textContent = 'SIRA';
+  labelsDiv.appendChild(hdr);
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const rl = document.createElement('div');
+    rl.className = 'row-label';
+    rl.textContent = rows[i].row;
+    labelsDiv.appendChild(rl);
+  }
+  wrap.appendChild(labelsDiv);
+
+  // Sections container
+  const sectionsDiv = document.createElement('div');
+  sectionsDiv.className = 'sections';
+
+  const leftSec   = document.createElement('div');
+  leftSec.className = 'section';
+  leftSec.style.width = sectionWidth(MAX_LEFT) + 'px';
+
+  const aisle1 = document.createElement('div');
+  aisle1.className = 'aisle-col';
+
+  const centerSec = document.createElement('div');
+  centerSec.className = 'section';
+  centerSec.style.width = sectionWidth(MAX_CENTER) + 'px';
+
+  const aisle2 = document.createElement('div');
+  aisle2.className = 'aisle-col';
+
+  const rightSec = document.createElement('div');
+  rightSec.className = 'section';
+  rightSec.style.width = sectionWidth(MAX_RIGHT) + 'px';
+
+  // Headers
+  const mkHdr = (txt, w) => {
+    const d = document.createElement('div');
+    d.className = 'section-hdr';
+    d.textContent = txt;
+    d.style.width = w + 'px';
+    return d;
+  };
+  leftSec.appendChild(mkHdr('Sol', sectionWidth(MAX_LEFT)));
+  aisle1.appendChild(document.createElement('div'));
+  centerSec.appendChild(mkHdr('Mərkəz', sectionWidth(MAX_CENTER)));
+  aisle2.appendChild(document.createElement('div'));
+  rightSec.appendChild(mkHdr('Sağ', sectionWidth(MAX_RIGHT)));
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const rd = rows[i];
+    appendRow(leftSec,   rd.row, rd.left,   'right');
+    appendRow(centerSec, rd.row, rd.center, 'center');
+    appendRow(rightSec,  rd.row, rd.right,  'left');
+  }
+
+  sectionsDiv.append(leftSec, aisle1, centerSec, aisle2, rightSec);
+  wrap.appendChild(sectionsDiv);
+
+  // ── Stage: aligned exactly under center section ──
+  // spacer = row-label col + left section + aisle gap
+  const LABEL_W = 36 + 6;
+  const AISLE_W = 20;
+  const centerW = sectionWidth(MAX_CENTER);
+  const spacerW = LABEL_W + sectionWidth(MAX_LEFT) + AISLE_W;
+
+  const stageWrap = document.createElement('div');
+  stageWrap.className = 'stage-wrap';
+
+  const stageInner = document.createElement('div');
+  stageInner.className = 'stage-inner';
+  // stageInner total width = same as hall content width so centering matches
+  const totalHallW = LABEL_W + sectionWidth(MAX_LEFT) + AISLE_W + centerW + AISLE_W + sectionWidth(MAX_RIGHT);
+  stageInner.style.width = totalHallW + 'px';
+  stageInner.style.display = 'flex';
+  stageInner.style.flexShrink = '0';
+
+  const spacer = document.createElement('div');
+  spacer.style.width = spacerW + 'px';
+  spacer.style.flexShrink = '0';
+
+  const curve = document.createElement('div');
+  curve.className = 'stage-curve';
+  curve.style.width = centerW + 'px';
+  curve.textContent = 'SƏHNƏ';
+
+  stageInner.appendChild(spacer);
+  stageInner.appendChild(curve);
+  stageWrap.appendChild(stageInner);
+
+  wrap.parentNode.insertBefore(stageWrap, wrap.nextSibling);
+}
+
+function appendRow(parent, rowNum, seats, align) {
+  const rowDiv = document.createElement('div');
+  rowDiv.className = 'seat-row';
+  // alignment determines how shorter rows sit within fixed-width section
+  rowDiv.style.justifyContent = align === 'right' ? 'flex-end'
+                               : align === 'center' ? 'center'
+                               : 'flex-start';
+  seats.forEach(s => {
+    const id = rowNum + '-' + s.num;
+    const btn = document.createElement('button');
+    btn.className = 'seat ' + priceClass(s.price);
+    btn.textContent = s.num;
+    btn.dataset.id    = id;
+    btn.dataset.row   = rowNum;
+    btn.dataset.num   = s.num;
+    btn.dataset.price = s.price;
+    btn.dataset.dbid  = (window._seatDbIds && window._seatDbIds[id]) || '';
+    btn.id = 'seat-' + id;
+    if (takenSeats.has(id)) {
+      btn.classList.add('taken');
+    } else {
+      btn.addEventListener('click', toggleSeat);
+      btn.addEventListener('mouseenter', showTooltip);
+      btn.addEventListener('mouseleave', hideTooltip);
+    }
+    if (selected.has(id)) btn.classList.add('selected');
+    rowDiv.appendChild(btn);
+  });
+  parent.appendChild(rowDiv);
+}
+
+// ─── Seat toggle ──────────────────────────────────────────────────────────
+function toggleSeat(e) {
+  const btn = e.currentTarget;
+  const id  = btn.dataset.id;
+  if (selected.has(id)) {
+    selected.delete(id);
+    btn.classList.remove('selected');
+  } else {
+    selected.set(id, { row: +btn.dataset.row, num: +btn.dataset.num, price: +btn.dataset.price });
+    btn.classList.add('selected');
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  let total = 0;
+  selected.forEach(s => total += s.price);
+  const cnt = selected.size;
+  document.getElementById('sel-count').textContent = cnt;
+  document.getElementById('sel-total').textContent = total + ' ₼';
+  document.getElementById('bar-text').textContent = `${cnt} bilet · ${total} ₼`;
+  const bar = document.getElementById('confirm-bar');
+  cnt > 0 ? bar.classList.add('visible') : bar.classList.remove('visible');
+}
+
+// ─── Tooltip ──────────────────────────────────────────────────────────────
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(e) {
+  const b = e.currentTarget;
+  tooltipEl.textContent = `Sıra ${b.dataset.row} · Yer ${b.dataset.num} · ${b.dataset.price} AZN`;
+  tooltipEl.classList.add('show');
+}
+function hideTooltip() { tooltipEl.classList.remove('show'); }
+document.addEventListener('mousemove', e => {
+  tooltipEl.style.left = (e.clientX + 12) + 'px';
+  tooltipEl.style.top  = (e.clientY - 34) + 'px';
+});
+
+// ─── Clear ────────────────────────────────────────────────────────────────
+document.getElementById('btn-clear').addEventListener('click', e => {
+  e.stopPropagation();
+  selected.clear();
+  document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
+  updateSummary();
+});
+
+// ─── Open modal ───────────────────────────────────────────────────────────
+document.getElementById('btn-confirm').addEventListener('click', openModal);
+
+function calcTotal() {
+  let t = 0; selected.forEach(s => t += s.price); return t;
+}
+
+function openModal() {
+  const total = calcTotal();
+  const backdrop = document.getElementById('modal-backdrop');
+  const content  = document.getElementById('modal-content');
+
+  // Build seat lines
+  let seatLinesHTML = '';
+  selected.forEach((s, id) => {
+    seatLinesHTML += `<div class="seat-line"><span>Sıra ${s.row}, Yer ${s.num}</span><span>${s.price} ₼</span></div>`;
+  });
+
+  content.innerHTML = `
+    <div class="modal-title">🎭 Bilet Sifariş</div>
+    <div class="modal-sub">Məlumatları doldurun və ödənişi tamamlayın</div>
+
+    <div class="modal-seats-box">
+      ${seatLinesHTML}
+      <div class="modal-total"><span>Cəmi</span><span>${total} ₼</span></div>
+    </div>
+
+    <label>Ad Soyad</label>
+    <input type="text" id="m-name" placeholder="Məsələn: Əli Həsənov">
+
+    <label>Telefon nömrəsi</label>
+    <input type="tel" id="m-phone" placeholder="+994 50 000 00 00">
+
+    <label>Ödəniş növü</label>
+    <div class="pay-toggle">
+      <button class="pay-btn" id="pay-cash" onclick="selectPay('cash')">💵 Nağd</button>
+      <button class="pay-btn" id="pay-card" onclick="selectPay('card')">💳 Kartla</button>
+    </div>
+
+    <div class="card-field" id="card-field">
+      <div class="pay-card-info">
+        <div class="pay-card-top">Ödənişi bu karta köçürün:</div>
+        <div class="pay-card-number">4169 7388 9012 3456</div>
+        <div class="pay-card-owner">Sahibi: Test MMC</div>
+      </div>
+    </div>
+
+    <div class="receipt-notice" id="receipt-notice">
+      ℹ️ Ödənişi kartla həyata keçirsəniz, zəhmət olmasa qəbzi <strong>0055 555 55 55</strong> nömrəsinə göndərin.
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Ləğv et</button>
+      <button class="btn-pay" onclick="submitPayment()">Ödənişi tamamla →</button>
+    </div>
+  `;
+
+  backdrop.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+}
+
+// Click outside modal to close
+document.getElementById('modal-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-backdrop')) closeModal();
+});
+
+// ─── Payment type ─────────────────────────────────────────────────────────
+let paymentType = null;
+
+function selectPay(type) {
+  paymentType = type;
+  document.getElementById('pay-cash').classList.toggle('active', type === 'cash');
+  document.getElementById('pay-card').classList.toggle('active', type === 'card');
+  document.getElementById('card-field').classList.toggle('show', type === 'card');
+  document.getElementById('receipt-notice').classList.toggle('show', type === 'card');
+}
+
+function formatCard(input) {
+  let v = input.value.replace(/\D/g,'').substring(0,16);
+  input.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+
+// ─── Submit ───────────────────────────────────────────────────────────────
+async function submitPayment() {
+  const name  = document.getElementById('m-name').value.trim();
+  const phone = document.getElementById('m-phone').value.trim();
+  const nameEl  = document.getElementById('m-name');
+  const phoneEl = document.getElementById('m-phone');
+  let ok = true;
+
+  nameEl.classList.remove('error');
+  phoneEl.classList.remove('error');
+
+  if (!name)  { nameEl.classList.add('error');  ok = false; }
+  if (!phone) { phoneEl.classList.add('error'); ok = false; }
+  if (!paymentType) { alert('Zəhmət olmasa ödəniş növünü seçin.'); return; }
+  if (!ok) return;
+
+  // Düyməni deaktiv et — iki dəfə basılmasın
+  const payBtn = document.querySelector('.btn-pay');
+  if (payBtn) { payBtn.disabled = true; payBtn.textContent = 'Gözlə...'; }
+
+  // Snapshot
+  const bookedSeats = [];
+  const seatDbIds   = [];
+  selected.forEach((s, id) => {
+    bookedSeats.push(s);
+    takenSeats.add(id);
+    const btn = document.getElementById('seat-' + id);
+    if (btn && btn.dataset.dbid) seatDbIds.push(parseInt(btn.dataset.dbid));
+  });
+  const bookedCount = bookedSeats.length;
+  const bookedTotal = calcTotal();
+  const orderNum = 'TKT-' + Date.now().toString().slice(-6);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('az-AZ', { day:'2-digit', month:'2-digit', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('az-AZ', { hour:'2-digit', minute:'2-digit' });
+
+  try {
+    // 1. Müştəri yarat
+    const customers = await sbPost('customers', { full_name: name, phone: phone });
+    const customerId = customers[0].id;
+
+    // 2. Sifariş yarat
+    const orders = await sbPost('orders', {
+      customer_id: customerId,
+      event_id: 1,
+      order_number: orderNum,
+      payment_type: paymentType,
+      payment_status: 'pending',
+      total_amount: bookedTotal
+    });
+    const orderId = orders[0].id;
+
+    // 3. Order items əlavə et
+    const items = bookedSeats.map((s, i) => ({
+      order_id: orderId,
+      seat_id: seatDbIds[i],
+      price: s.price
+    }));
+    await sbPost('order_items', items, 'return=minimal');
+
+    // 4. Yerləri bağla
+    if (seatDbIds.length > 0) {
+      await sbPatch('seats', `id=in.(${seatDbIds.join(',')})`, { status: 'sold' });
+    }
+  } catch(err) {
+    console.error('Supabase error:', err);
+  }
+
+  selected.clear();
+  updateSummary();
+  buildHall();
+
+  // Build ticket rows
+  let ticketRows = bookedSeats.map((s, i) => `
+    <div class="ticket-card">
+      <div class="ticket-left">
+        <div class="ticket-num">#${String(i+1).padStart(2,'0')}</div>
+        <div class="ticket-event">Test</div>
+        <div class="ticket-date">📅 ${dateStr} · ${timeStr}</div>
+      </div>
+      <div class="ticket-divider"><span></span></div>
+      <div class="ticket-right">
+        <div class="ticket-seat-label">SIRA</div>
+        <div class="ticket-seat-val">${s.row}</div>
+        <div class="ticket-seat-label" style="margin-top:8px">YER</div>
+        <div class="ticket-seat-val">${s.num}</div>
+        <div class="ticket-price">${s.price} ₼</div>
+      </div>
+    </div>
+  `).join('');
+
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <div class="receipt-header">
+      <div class="receipt-check">✅</div>
+      <div class="receipt-title">Sifarişiniz təsdiqləndi!</div>
+      <div class="receipt-order">Sifariş №: <strong>${orderNum}</strong></div>
+    </div>
+
+    <div class="receipt-meta">
+      <div class="meta-row"><span>Ad Soyad</span><strong>${name}</strong></div>
+      <div class="meta-row"><span>Telefon</span><strong>${phone}</strong></div>
+      <div class="meta-row"><span>Ödəniş növü</span><strong>${paymentType === 'card' ? '💳 Kartla' : '💵 Nağd'}</strong></div>
+      ${paymentType === 'card' ? `<div class="meta-row"><span>Ödəniş kartı</span><strong>4169 7388 9012 3456</strong></div>` : ''}
+      <div class="meta-row"><span>Tarix</span><strong>${dateStr} · ${timeStr}</strong></div>
+    </div>
+
+    <div class="tickets-label">🎟 Biletlər (${bookedCount} ədəd)</div>
+    <div class="tickets-list">${ticketRows}</div>
+
+    <div class="receipt-total-row">
+      <span>Ümumi məbləğ</span>
+      <span class="receipt-total-val">${bookedTotal} ₼</span>
+    </div>
+
+    ${paymentType === 'card' ? `
+    <div class="receipt-notice show" style="margin-top:14px">
+      📲 Kartla ödəniş qəbzini zəhmət olmasa <strong>0055 555 55 55</strong> nömrəsinə göndərin.
+    </div>` : ''}
+
+    <button class="btn-close-success" onclick="closeModal()" style="margin-top:20px">Bağla</button>
+  `;
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+fetchSeats().then(() => {
+  buildHall();
+  updateSummary();
+});
+</script>
+</body>
+</html>
